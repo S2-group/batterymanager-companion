@@ -1,0 +1,1 @@
+# ar-batterymanager-script
