@@ -7,18 +7,11 @@ import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.material.Button
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.tooling.preview.Preview
 import com.example.batterymanager_utility.ui.theme.Batterymanager_utilityTheme
-import java.io.File
-import java.io.FileWriter
-import java.io.IOException
-import java.io.OutputStreamWriter
-import java.lang.reflect.Modifier
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,17 +20,18 @@ class MainActivity : ComponentActivity() {
             Batterymanager_utilityTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    Greeting("Android")
+                    Greeting("Android", this)
                 }
             }
         }
-        writeFile(this)
     }
 }
 
 @Composable
-fun Greeting(name: String) {
+fun Greeting(name: String, mcoContext: Context) {
     Text(text = "Hello $name!")
+    writeFile(mcoContext)
+
 }
 
 //private fun writeToFile(data: String, context: Context) {
@@ -54,10 +48,21 @@ fun Greeting(name: String) {
 fun writeFile(mcoContext: Context) {
 // write to new file in /data/local/tmp/
     var batteryManager = mcoContext.getSystemService(BATTERY_SERVICE) as BatteryManager
-    var chargingStatus = batteryManager.isCharging
-    var currentNow = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-    Log.e("BatteryMgr", "chargeStat $chargingStatus")
-    Log.e("BatteryMgr", "currentNow $currentNow")
+    var chargingStatus: Boolean
+    var currentNow: Int
+
+    while (true) {
+        chargingStatus = batteryManager.isCharging
+        currentNow = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+
+        //TODO: write logs of relevant data
+        Log.e("BatteryMgr", "chargeStat $chargingStatus")
+        Log.e("BatteryMgr", "currentNow $currentNow")
+        
+        Thread.sleep(5000)
+    }
+
+    
 
 // write to new file in /data/data/com.example.batterymanager_utility/files/mydir
 
