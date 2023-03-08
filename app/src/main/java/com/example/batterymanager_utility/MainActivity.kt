@@ -97,7 +97,7 @@ class MainActivity : ComponentActivity() {
         receiverSetup()
 
         while (true) {
-            var stats = getStats(batteryManager)
+            val stats = getStats(batteryManager)
 
             Log.i("BatteryMgr:writeToFile", "writing $stats")
             FileOutputStream(file, true).use {
@@ -151,29 +151,28 @@ class MainActivity : ComponentActivity() {
         val hours = floor(estimatedLifeTime)
         val minutes = ((estimatedLifeTime - hours)*60)
 
-
         return "$timestamp, $currentNow, $status, $currentAverage, $watts, $energy, $capacity, $capacityPercentage, $hours, $minutes"
     }
 
 
-    fun writeToLog() {
-        Toast.makeText(this, "Hello from BatteryManager utility!", Toast.LENGTH_SHORT).show()
-
-        var batteryManager = this.getSystemService(BATTERY_SERVICE) as BatteryManager
-        var chargingStatus: Boolean
-        var currentNow: Int
-
-        while (true) {
-            chargingStatus = batteryManager.isCharging
-            currentNow = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
-
-            //TODO: write logs of relevant data
-            Log.e("BatteryMgr", "chargeStat $chargingStatus")
-            Log.e("BatteryMgr", "currentNow $currentNow")
-
-            Thread.sleep(5000)
-        }
-    }
+//    fun writeToLog() {
+//        Toast.makeText(this, "Hello from BatteryManager utility!", Toast.LENGTH_SHORT).show()
+//
+//        var batteryManager = this.getSystemService(BATTERY_SERVICE) as BatteryManager
+//        var chargingStatus: Boolean
+//        var currentNow: Int
+//
+//        while (true) {
+//            chargingStatus = batteryManager.isCharging
+//            currentNow = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
+//
+//            //TODO: write logs of relevant data
+//            Log.e("BatteryMgr", "chargeStat $chargingStatus")
+//            Log.e("BatteryMgr", "currentNow $currentNow")
+//
+//            Thread.sleep(5000)
+//        }
+//    }
 }
 
 private class BatteryManagerBroadcastReceiver(
