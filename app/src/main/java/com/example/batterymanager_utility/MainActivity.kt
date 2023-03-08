@@ -169,7 +169,7 @@ class MainActivity : ComponentActivity() {
         val hours = floor(estimatedLifeTime)
         val minutes = ((estimatedLifeTime - hours)*60)
 
-        return "$timestamp,$currentNow,$status,$currentAverage,$lastKnownVoltage,$watts,$capacity,$capacityPercentage,$hours,$minutes"
+        return "$timestamp,$currentNow,$status,$currentAverage,$lastKnownVoltage,$watts,$energy,$capacity,$capacityPercentage,$hours,$minutes"
     }
 
 
