@@ -9,7 +9,9 @@ import android.content.pm.PackageManager
 import android.os.BatteryManager
 import android.os.Bundle
 import android.os.Environment
+import android.util.AttributeSet
 import android.util.Log
+import android.view.View
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -37,7 +39,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // A surface container using the 'background' color from the theme
             Surface(color = MaterialTheme.colors.background) {}
         }
 
@@ -46,7 +47,9 @@ class MainActivity : ComponentActivity() {
 
                 Log.i("BatteryMgr:onCreate", "permission granted")
                 val file = this.createFile()
+//                receiverSetup()
                 writeToFile(file)
+
             }
             shouldShowRequestPermissionRationale() -> {
                 Toast.makeText(this, "Pls accept", Toast.LENGTH_SHORT).show()
@@ -58,6 +61,21 @@ class MainActivity : ComponentActivity() {
                     requestPermissionLauncher.launch(Manifest.permission.WRITE_EXTERNAL_STORAGE)
             }
         }
+    }
+
+    override fun onCreateView(
+        parent: View?,
+        name: String,
+        context: Context,
+        attrs: AttributeSet
+    ): View? {
+        return super.onCreateView(parent, name, context, attrs)
+    }
+
+
+    override fun onDestroy() {
+        super.onDestroy()
+        this.unregisterReceiver(broadcastReceiver)
     }
 
     private fun shouldShowRequestPermissionRationale(): Boolean {
@@ -81,7 +99,7 @@ class MainActivity : ComponentActivity() {
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "BatteryManager.csv")
         Log.i("BatteryMgr:createFile", "creating file called $file")
 
-        val cols = "timestamp(ms), currentNow(microA), chargingStatus, currentAverage(microA), watts, energy(nanoWh), capacity(microAh), capacityPercentage(%), hours, minutes"
+        val cols = "timestamp(ms),currentNow(microA),chargingStatus,currentAverage(microA),lastKnownVoltage(mV),watts,energy(nanoWh),capacity(microAh),capacityPercentage(%),hours,minutes"
         FileOutputStream(file).use {
             it.write("$cols\n".toByteArray())
         }
@@ -92,25 +110,24 @@ class MainActivity : ComponentActivity() {
 
     private fun writeToFile(file: File) {
         Toast.makeText(this, "Hello from BatteryManager utility!", Toast.LENGTH_SHORT).show()
-
         val batteryManager = this.getSystemService(BATTERY_SERVICE) as BatteryManager
-        receiverSetup()
-
         while (true) {
+            receiverSetup()
+
+            Thread.sleep(1000)
             val stats = getStats(batteryManager)
 
             Log.i("BatteryMgr:writeToFile", "writing $stats")
             FileOutputStream(file, true).use {
                 it.write("$stats\n".toByteArray())
             }
-            Thread.sleep(5000)
         }
     }
 
 
     private fun receiverSetup() {
         broadcastReceiver = BatteryManagerBroadcastReceiver { intent ->
-            lastKnownVoltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
+            this.lastKnownVoltage = intent.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
 
             val level = intent.getIntExtra(BatteryManager.EXTRA_LEVEL, -1)
             val scale = intent.getIntExtra(BatteryManager.EXTRA_SCALE, -1)
@@ -126,9 +143,10 @@ class MainActivity : ComponentActivity() {
     private fun getStats(batteryManager: BatteryManager): String {
         val timestamp = System.currentTimeMillis()
 
+        // code from https://github.com/S2-group/batterydrainer/blob/master/app/src/main/java/nl/vu/cs/s2group/batterydrainer/LiveView.kt
         var currentNow = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW) //Instantaneous battery current in microamperes
-
         val status = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_STATUS)
+
         if(status == BatteryManager.BATTERY_STATUS_DISCHARGING) {   //some models report with inverted sign
             currentNow = -abs(currentNow)
         }
@@ -151,7 +169,7 @@ class MainActivity : ComponentActivity() {
         val hours = floor(estimatedLifeTime)
         val minutes = ((estimatedLifeTime - hours)*60)
 
-        return "$timestamp, $currentNow, $status, $currentAverage, $watts, $energy, $capacity, $capacityPercentage, $hours, $minutes"
+        return "$timestamp,$currentNow,$status,$currentAverage,$lastKnownVoltage,$watts,$capacity,$capacityPercentage,$hours,$minutes"
     }
 
 
@@ -166,7 +184,6 @@ class MainActivity : ComponentActivity() {
 //            chargingStatus = batteryManager.isCharging
 //            currentNow = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_NOW)
 //
-//            //TODO: write logs of relevant data
 //            Log.e("BatteryMgr", "chargeStat $chargingStatus")
 //            Log.e("BatteryMgr", "currentNow $currentNow")
 //
