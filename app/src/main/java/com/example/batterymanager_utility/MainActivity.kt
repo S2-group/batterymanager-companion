@@ -35,8 +35,8 @@ class MainActivity : ComponentActivity() {
     private lateinit var batteryManager: BatteryManager
     private lateinit var powerManager: PowerManager
     private lateinit var broadcastReceiver: BroadcastReceiver
-    private var lastKnownVoltage : Int = 0 // milivolts
-    private var lastKnownLevel : Double = 0.0 // percentage
+    private var lastKnownVoltage : Int = 0 // milivolts     -- still not working
+    private var lastKnownLevel : Double = 0.0 // percentage -- still not working
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
