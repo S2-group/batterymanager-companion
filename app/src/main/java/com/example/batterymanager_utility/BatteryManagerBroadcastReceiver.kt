@@ -8,11 +8,10 @@ import android.util.Log
 
 class BatteryManagerBroadcastReceiver : BroadcastReceiver() {
 
-    var lastKnownVoltage : Int = 0 // mili volts     -- still not working
+    private val TAG = "BatteryManagerBroadcastReceiver"
 
-    companion object {
-        private const val TAG = "BatteryManagerBroadcastReceiver"
-    }
+    private var lastKnownVoltage : Int = 0 // milivolts
+
 
     fun getVoltage(): Int {
         return lastKnownVoltage
