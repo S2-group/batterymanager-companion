@@ -1,19 +1,19 @@
 package com.example.batterymanager_utility
 
-import android.Manifest
 import android.app.Notification
 import android.app.Service
 import android.content.Intent
 import android.content.IntentFilter
-import android.os.*
+import android.os.BatteryManager
+import android.os.Environment
+import android.os.IBinder
+import android.os.PowerManager
 import android.util.Log
-import androidx.annotation.RequiresApi
 import kotlinx.coroutines.*
 import java.io.File
 import java.io.FileOutputStream
 import kotlin.math.abs
 import kotlin.math.floor
-
 
 class DataCollectionService : Service() {
 
@@ -25,7 +25,7 @@ class DataCollectionService : Service() {
     private lateinit var powerManager: PowerManager
     private lateinit var broadcastReceiver: BatteryManagerBroadcastReceiver
     private lateinit var intentFilter: IntentFilter
-    private var job: Job? = null
+    private var collectorWorker: Job? = null
 
     private var data: ArrayList<String> = ArrayList<String>()
 
@@ -34,7 +34,6 @@ class DataCollectionService : Service() {
         super.onCreate()
     }
 
-    @RequiresApi(Build.VERSION_CODES.P)
     @OptIn(DelicateCoroutinesApi::class)
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(TAG, "onStartCommand: begin")
@@ -52,11 +51,10 @@ class DataCollectionService : Service() {
         Log.i(TAG, "started foreground")
 
         receiverSetup()
-        val handler = handlerSetup()
-        registerReceiver(broadcastReceiver, intentFilter, Manifest.permission.FOREGROUND_SERVICE, handler)
+        registerReceiver(broadcastReceiver, intentFilter)
         Log.i(TAG, "registered receiver")
 
-        this.job = CoroutineScope(Dispatchers.IO).launch {
+        this.collectorWorker = CoroutineScope(Dispatchers.IO).launch {
             collectData(sampleRate!!)
         }
 //        collectData(sampleRate!!)
@@ -74,20 +72,6 @@ class DataCollectionService : Service() {
             addAction(Intent.ACTION_BATTERY_CHANGED)
         }
         Log.i(TAG, "receiverSetup: end")
-    }
-
-    private fun handlerSetup(): Handler {
-        val handlerThread = HandlerThread("BManReceiverThread")
-        handlerThread.start()
-        // Now get the Looper from the HandlerThread so that we can create a Handler that is attached to
-        //  the HandlerThread
-        // NOTE: This call will block until the HandlerThread gets control and initializes its Looper
-        // Now get the Looper from the HandlerThread so that we can create a Handler that is attached to
-        //  the HandlerThread
-        // NOTE: This call will block until the HandlerThread gets control and initializes its Looper
-        val looper = handlerThread.looper
-        // Create a handler for the service
-        return Handler(looper)
     }
 
     private suspend fun collectData(sampleRate: Int) {
@@ -136,13 +120,12 @@ class DataCollectionService : Service() {
 
     override fun onDestroy() {
         super.onDestroy()
-        job?.cancel()
+        collectorWorker?.cancel()
         // create the file
         val file = createFile()
         // write to the file
         writeToFile(file)
         unregisterReceiver(broadcastReceiver)
-        data = arrayListOf<String>()
     }
 
     private fun createFile() : File {
