@@ -32,9 +32,23 @@ class DataCollectionService : Service() {
 
     override fun onCreate() {
         super.onCreate()
+        receiverSetup()
+        registerReceiver(broadcastReceiver, intentFilter)
+        Log.i(TAG, "registered receiver")
     }
 
-    @OptIn(DelicateCoroutinesApi::class)
+    private fun receiverSetup() {
+        Log.i(TAG, "receiverSetup: begin")
+        batteryManager = this.getSystemService(BATTERY_SERVICE) as BatteryManager
+        powerManager = this.getSystemService(POWER_SERVICE)     as PowerManager
+
+        broadcastReceiver = BatteryManagerBroadcastReceiver()
+        intentFilter = IntentFilter().apply {
+            addAction(Intent.ACTION_BATTERY_CHANGED)
+        }
+        Log.i(TAG, "receiverSetup: end")
+    }
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(TAG, "onStartCommand: begin")
         val sampleRate: Int? = intent?.getIntExtra("sampleRate", 1000)
@@ -50,28 +64,12 @@ class DataCollectionService : Service() {
         startForeground(1, notification)
         Log.i(TAG, "started foreground")
 
-        receiverSetup()
-        registerReceiver(broadcastReceiver, intentFilter)
-        Log.i(TAG, "registered receiver")
-
         this.collectorWorker = CoroutineScope(Dispatchers.IO).launch {
             collectData(sampleRate!!)
         }
 //        collectData(sampleRate!!)
 
         return START_NOT_STICKY
-    }
-
-    private fun receiverSetup() {
-        Log.i(TAG, "receiverSetup: begin")
-        batteryManager = this.getSystemService(BATTERY_SERVICE) as BatteryManager
-        powerManager = this.getSystemService(POWER_SERVICE)     as PowerManager
-
-        broadcastReceiver = BatteryManagerBroadcastReceiver()
-        intentFilter = IntentFilter().apply {
-            addAction(Intent.ACTION_BATTERY_CHANGED)
-        }
-        Log.i(TAG, "receiverSetup: end")
     }
 
     private suspend fun collectData(sampleRate: Int) {
