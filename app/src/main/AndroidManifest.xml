@@ -6,6 +6,7 @@
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
 
     <application
         android:name=".App"
@@ -18,7 +19,11 @@
         android:theme="@style/Theme.Batterymanager_utility"
         tools:targetApi="31">
 
-        <receiver android:name=".BatteryManagerBroadcastReceiver" android:enabled="true" android:exported="false" />
+        <receiver android:name=".BatteryManagerBroadcastReceiver" android:enabled="true" android:exported="false" >
+            <intent-filter>
+                <action android:name="android.intent.action.BATTERY_CHANGED" />
+            </intent-filter>
+        </receiver>
         <activity
             android:name=".MainActivity"
             android:exported="true"

@@ -2,6 +2,7 @@ package com.example.batterymanager_utility
 
 import android.app.Notification
 import android.app.Service
+import android.content.BroadcastReceiver
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
@@ -23,17 +24,17 @@ class DataCollectionService : Service() {
 
     private lateinit var batteryManager: BatteryManager
     private lateinit var powerManager: PowerManager
-    private lateinit var broadcastReceiver: BatteryManagerBroadcastReceiver
-    private lateinit var intentFilter: IntentFilter
+//    private lateinit var broadcastReceiver: BroadcastReceiver
     private var collectorWorker: Job? = null
 
-    private var data: ArrayList<String> = ArrayList<String>()
+    private var data: ArrayList<String> = ArrayList()
+    private var lastKnownVoltage: Int = 0 // milivolts
+    private lateinit var intentFilter: IntentFilter
 
 
     override fun onCreate() {
         super.onCreate()
         receiverSetup()
-        registerReceiver(broadcastReceiver, intentFilter)
         Log.i(TAG, "registered receiver")
     }
 
@@ -42,10 +43,15 @@ class DataCollectionService : Service() {
         batteryManager = this.getSystemService(BATTERY_SERVICE) as BatteryManager
         powerManager = this.getSystemService(POWER_SERVICE)     as PowerManager
 
-        broadcastReceiver = BatteryManagerBroadcastReceiver()
+//        broadcastReceiver = BatteryManagerBroadcastReceiver()
         intentFilter = IntentFilter().apply {
             addAction(Intent.ACTION_BATTERY_CHANGED)
         }
+        var thingy = registerReceiver(null, intentFilter)
+        if (thingy != null) {
+            lastKnownVoltage = thingy.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
+        }
+        Log.i(TAG, "receiverSetup: thingy => $lastKnownVoltage")
         Log.i(TAG, "receiverSetup: end")
     }
 
@@ -93,7 +99,14 @@ class DataCollectionService : Service() {
             currentNow = -abs(currentNow)
         }
 
-        val lastKnownVoltage = broadcastReceiver.getVoltage()
+        var thingy = registerReceiver(null, intentFilter)
+        if (thingy != null) {
+            lastKnownVoltage = thingy.getIntExtra(BatteryManager.EXTRA_VOLTAGE, 0)
+        }
+        Log.i(TAG, "receiverSetup: thingy => $lastKnownVoltage")
+
+
+//        lastKnownVoltage = (broadcastReceiver as BatteryManagerBroadcastReceiver).getVoltage()
 
         val currentAverage = batteryManager.getIntProperty(BatteryManager.BATTERY_PROPERTY_CURRENT_AVERAGE) //Average battery current in microamperes
         val watts = if(currentNow >= 0)  0.0 else (lastKnownVoltage.toDouble() / 1000) * (abs(currentNow).toDouble()/1000/1000) //Only negative current means discharging
@@ -123,7 +136,7 @@ class DataCollectionService : Service() {
         val file = createFile()
         // write to the file
         writeToFile(file)
-        unregisterReceiver(broadcastReceiver)
+//        unregisterReceiver(broadcastReceiver)
     }
 
     private fun createFile() : File {
