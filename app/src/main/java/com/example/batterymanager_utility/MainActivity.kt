@@ -29,6 +29,7 @@ class MainActivity : ComponentActivity() {
     fun startService() {
         val intent = Intent(this, DataCollectionService::class.java)
         intent.putExtra("sampleRate", 1000)
+        intent.putExtra("dataFields", "BATTERY_HEALTH_COLD,BATTERY_STATUS_CHARGING,EXTRA_VOLTAGE,EXTRA_TEMPERATURE")
         startForegroundService(intent)
     }
 
