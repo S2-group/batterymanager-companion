@@ -3,11 +3,8 @@ package com.example.batterymanager_utility
 import android.app.Notification
 import android.app.Service
 import android.content.Intent
-import android.content.IntentFilter
-import android.os.BatteryManager
 import android.os.Environment
 import android.os.IBinder
-import android.os.PowerManager
 import android.util.Log
 import kotlinx.coroutines.*
 import java.io.File
@@ -18,16 +15,12 @@ class DataCollectionService : Service() {
     private val TAG = "BatteryMgr:DataCollectionService"
     private val NOTIFICATION_TITLE = "Battery Manager"
     private val NOTIFICATION_TEXT = "Collecting data..."
-    private var collectorWorker: Job? = null
 
+    private var collectorWorker: Job? = null
     private lateinit var collector: DataCollector
+
     private lateinit var dataFields: ArrayList<String>
     private var data: ArrayList<String> = ArrayList()
-
-
-    override fun onCreate() {
-        super.onCreate()
-    }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(TAG, "onStartCommand: begin")

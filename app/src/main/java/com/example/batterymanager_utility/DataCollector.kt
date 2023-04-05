@@ -2,25 +2,21 @@ package com.example.batterymanager_utility
 
 import android.content.Context
 import android.content.Context.BATTERY_SERVICE
-import android.content.Context.POWER_SERVICE
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.BatteryManager
-import android.os.PowerManager
 
 class DataCollector(private val context: Context, private val dataPoints: ArrayList<String>) {
 
     private val TAG = "BatteryMgr:DataCollector"
 
     private val batteryManager = context.getSystemService(BATTERY_SERVICE) as BatteryManager
-    private val powerManager = context.getSystemService(POWER_SERVICE) as PowerManager
 
     private var intentFilter: IntentFilter = IntentFilter().apply {
         addAction(Intent.ACTION_BATTERY_CHANGED)
     }
-    private val receiver: Intent? = context.registerReceiver(null, intentFilter)
 
-    private val dataPointsMapInts = mapOf(
+    private val dataPointsMapBATTERY = mapOf(
         "BATTERY_HEALTH_COLD"                   to BatteryManager.BATTERY_HEALTH_COLD,
         "BATTERY_HEALTH_DEAD"                   to BatteryManager.BATTERY_HEALTH_DEAD,
         "BATTERY_HEALTH_GOOD"                   to BatteryManager.BATTERY_HEALTH_GOOD,
@@ -60,22 +56,23 @@ class DataCollector(private val context: Context, private val dataPoints: ArrayL
         "EXTRA_VOLTAGE"                         to BatteryManager.EXTRA_VOLTAGE
     )
 
-    public fun getDataPoints(): ArrayList<String> {
+    fun getDataPoints(): ArrayList<String> {
         return this.dataPoints
     }
 
-    public fun getData(): String {
-        var data = "${System.currentTimeMillis()}}"
+    fun getData(): String {
+        var data = "${System.currentTimeMillis()}"
 
         for (dataPoint in dataPoints) {
             if (dataPoint.startsWith("EXTRA")) {
-                data += "," + receiver?.getIntExtra(dataPointsMapEXTRA[dataPoint], -1).toString() + ","
+                val receiver: Intent? = context.registerReceiver(null, intentFilter)
+                data += "," + receiver?.getIntExtra(dataPointsMapEXTRA[dataPoint], -1).toString()
             } else if (dataPoint == "ACTION_CHARGING") {
                 data += "," + batteryManager.isCharging.toString()
             } else if (dataPoint == "ACTION_DISCHARGING") {
                 data += "," + (!batteryManager.isCharging).toString()
             } else if (dataPoint.startsWith("BATTERY")) {
-                data += "," + batteryManager.getIntProperty(dataPointsMapInts[dataPoint]!!).toString()
+                data += "," + batteryManager.getIntProperty(dataPointsMapBATTERY[dataPoint]!!).toString()
             }
         }
 
