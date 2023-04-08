@@ -7,8 +7,6 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.Button
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,13 +25,17 @@ class MainActivity : ComponentActivity() {
     }
 
     fun startService() {
+/*      adb shell am start-foreground-service -n "com.example.batterymanager_utility/com.example.batterymanager_utility.DataCollectionService" --ei sampleRate 800 \ --es "dataFields" "BATTERY_HEALTH_COLD,BATTERY_STATUS_CHARGING,EXTRA_VOLTAGE,EXTRA_TEMPERATURE" \ --ez toCSV True
+ */
         val intent = Intent(this, DataCollectionService::class.java)
         intent.putExtra("sampleRate", 1000)
         intent.putExtra("dataFields", "BATTERY_HEALTH_COLD,BATTERY_STATUS_CHARGING,EXTRA_VOLTAGE,EXTRA_TEMPERATURE")
+        intent.putExtra("toCSV", "True")
         startForegroundService(intent)
     }
 
     fun stopService() {
+//      adb shell am stopservice -n "com.example.batterymanager_utility/com.example.batterymanager_utility.DataCollectionService"
         val intent = Intent(this, DataCollectionService::class.java)
         stopService(intent)
     }
@@ -41,7 +43,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun Greeting(name: String, mainActivity: MainActivity) {
-    Column() {
+    Column {
         Text(text = name, color = Color.Red, modifier = Modifier.padding(24.dp))
 
         Button(onClick = { mainActivity.startService() }) {

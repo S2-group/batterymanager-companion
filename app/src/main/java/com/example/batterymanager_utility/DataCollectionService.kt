@@ -20,16 +20,20 @@ class DataCollectionService : Service() {
     private lateinit var collector: DataCollector
 
     private lateinit var dataFields: ArrayList<String>
+    private var toCSV: Boolean = false
     private var data: ArrayList<String> = ArrayList()
+
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         Log.i(TAG, "onStartCommand: begin")
-        val sampleRate: Int? = intent?.getIntExtra("sampleRate", 1000)
+        val sampleRate: Int = intent!!.getIntExtra("sampleRate", 1000)
         Log.i(TAG, "onStartCommand: sampleRate => $sampleRate")
-        val rawFields: String? = intent?.getStringExtra("dataFields")
+        val rawFields: String? = intent.getStringExtra("dataFields")
         Log.i(TAG, "onStartCommand: rawFields => $rawFields")
         dataFields = rawFields?.split(",") as ArrayList<String>
         dataFields.add(0,"Timestamp")
+
+        toCSV = intent.getBooleanExtra("toCSV", true)
 
         val notification: Notification = Notification.Builder(this, App.CHANNEL_ID)
             .setContentTitle(NOTIFICATION_TITLE)
@@ -44,12 +48,12 @@ class DataCollectionService : Service() {
         collector = DataCollector(this, dataFields)
 
         this.collectorWorker = CoroutineScope(Dispatchers.IO).launch {
-            collectData(sampleRate!!)
+            collectData(sampleRate!!, toCSV)
         }
         return START_NOT_STICKY
     }
 
-    private suspend fun collectData(sampleRate: Int) {
+    private suspend fun collectData(sampleRate: Int, toCSV: Boolean) {
         Log.i(TAG, "collectData: begin")
         while (true) {
             val stats = collector.getData()
@@ -63,14 +67,20 @@ class DataCollectionService : Service() {
         super.onDestroy()
         collectorWorker?.cancel()
         // create the file
-        val file = createFile()
-        // write to the file
-        writeToFile(file)
+        if (toCSV) {
+            val file = createFile()
+            // write to the file
+            writeToFile(file)
+        }
     }
 
     private fun createFile() : File {
         // Create a new file and write data to it.
         val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOCUMENTS), "BatteryManager.csv")
+        if (file.exists()) {
+            Log.i("BatteryMgr:createFile", "file already exists")
+            return file
+        }
         Log.i("BatteryMgr:createFile", "creating file called $file")
 
         val cols = collector.getDataPoints().joinToString(",")
