@@ -12,10 +12,6 @@ import java.io.FileOutputStream
 
 class DataCollectionService : Service() {
 
-    private val TAG = "BatteryMgr:DataCollectionService"
-    private val NOTIFICATION_TITLE = "Battery Manager"
-    private val NOTIFICATION_TEXT = "Collecting data..."
-
     private var collectorWorker: Job? = null
     private lateinit var collector: DataCollector
 
@@ -48,12 +44,12 @@ class DataCollectionService : Service() {
         collector = DataCollector(this, dataFields)
 
         this.collectorWorker = CoroutineScope(Dispatchers.IO).launch {
-            collectData(sampleRate!!, toCSV)
+            collectData(sampleRate)
         }
         return START_NOT_STICKY
     }
 
-    private suspend fun collectData(sampleRate: Int, toCSV: Boolean) {
+    private suspend fun collectData(sampleRate: Int) {
         Log.i(TAG, "collectData: begin")
         while (true) {
             val stats = collector.getData()
@@ -101,5 +97,11 @@ class DataCollectionService : Service() {
 
     override fun onBind(intent: Intent): IBinder {
         null!!
+    }
+
+    companion object {
+        private const val TAG = "BatteryMgr:DataCollectionService"
+        private const val NOTIFICATION_TITLE = "Battery Manager"
+        private const val NOTIFICATION_TEXT = "Collecting data..."
     }
 }

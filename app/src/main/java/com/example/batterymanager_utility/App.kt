@@ -5,15 +5,9 @@ import android.util.Log
 
 class App : Application() {
 
-    private val TAG = "BatteryMgr:App"
-
-    companion object {
-        val CHANNEL_ID: String = "serviceChannel"
-    }
-
     override fun onCreate() {
         super.onCreate()
-        createNotificationChannel();
+        createNotificationChannel()
     }
 
     private fun createNotificationChannel() {
@@ -29,4 +23,8 @@ class App : Application() {
         manager.createNotificationChannel(serviceChannel)
     }
 
+    companion object {
+        const val CHANNEL_ID: String = "serviceChannel"
+        private const val TAG = "BatteryMgr:App"
+    }
 }
