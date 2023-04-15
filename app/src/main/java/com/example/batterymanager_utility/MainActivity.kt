@@ -25,12 +25,12 @@ class MainActivity : ComponentActivity() {
     }
 
     fun startService() {
-/*      adb shell am start-foreground-service -n "com.example.batterymanager_utility/com.example.batterymanager_utility.DataCollectionService" --ei sampleRate 800 \ --es "dataFields" "BATTERY_HEALTH_COLD,BATTERY_STATUS_CHARGING,EXTRA_VOLTAGE,EXTRA_TEMPERATURE" \ --ez toCSV True
- */
+//      adb shell am start-foreground-service -n "com.example.batterymanager_utility/com.example.batterymanager_utility.DataCollectionService" --ei sampleRate 800 \ --es "dataFields" "BATTERY_HEALTH_COLD,BATTERY_STATUS_CHARGING,EXTRA_VOLTAGE,EXTRA_TEMPERATURE" \ --ez toCSV True
+
         val intent = Intent(this, DataCollectionService::class.java)
         intent.putExtra("sampleRate", 1000)
         intent.putExtra("dataFields", "BATTERY_HEALTH_COLD,BATTERY_STATUS_CHARGING,EXTRA_VOLTAGE,EXTRA_TEMPERATURE")
-        intent.putExtra("toCSV", "True")
+        intent.putExtra("toCSV", true)
         startForegroundService(intent)
     }
 
