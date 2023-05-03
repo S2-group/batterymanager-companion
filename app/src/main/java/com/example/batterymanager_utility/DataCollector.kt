@@ -18,12 +18,17 @@ class DataCollector(private val context: Context, private val dataPoints: ArrayL
     }
 
     fun getData(): String {
-        var data = "${System.currentTimeMillis()}"
+        var data = ""
+        val receiver: Intent? = context.registerReceiver(null, intentFilter)
 
         for (dataPoint in dataPoints) {
             if (dataPoint.startsWith("EXTRA")) {
-                val receiver: Intent? = context.registerReceiver(null, intentFilter)
-                data += "," + receiver?.getIntExtra(dataPointsMapEXTRA[dataPoint], -1).toString()
+                if (dataPoint == "EXTRA_BATTERY_LOW" || dataPoint == "EXTRA_PRESENT")
+                    data += "," + receiver?.getBooleanExtra(dataPointsMapEXTRA[dataPoint], false).toString()
+                else if (dataPoint == "EXTRA_TECHNOLOGY")
+                    data += "," + receiver?.getStringExtra(dataPointsMapEXTRA[dataPoint]).toString()
+                else
+                    data += "," + receiver?.getIntExtra(dataPointsMapEXTRA[dataPoint], Int.MIN_VALUE).toString()
             } else if (dataPoint == "ACTION_CHARGING") {
                 data += "," + batteryManager.isCharging.toString()
             } else if (dataPoint == "ACTION_DISCHARGING") {
@@ -33,7 +38,7 @@ class DataCollector(private val context: Context, private val dataPoints: ArrayL
             }
         }
 
-        return data
+        return "${System.currentTimeMillis()}" + data
     }
 
     companion object {

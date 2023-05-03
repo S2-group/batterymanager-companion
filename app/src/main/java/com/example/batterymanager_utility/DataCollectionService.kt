@@ -25,7 +25,7 @@ class DataCollectionService : Service() {
         val sampleRate: Int = intent!!.getIntExtra("sampleRate", 1000)
         Log.i(TAG, "onStartCommand: sampleRate => $sampleRate")
         val rawFields: String? = intent.getStringExtra("dataFields")
-        Log.i(TAG, "onStartCommand: rawFields => $rawFields")
+        Log.i(TAG, "onStartCommand: rawFields => Timestamp,$rawFields")
         dataFields = rawFields?.split(",") as ArrayList<String>
         dataFields.add(0,"Timestamp")
 
@@ -55,7 +55,8 @@ class DataCollectionService : Service() {
             val stats = collector.getData()
             Log.i(TAG, "stats => $stats")
             data.add(stats)
-            delay(sampleRate.toLong())
+            if (sampleRate > 0)
+                delay(sampleRate.toLong())
         }
     }
 
@@ -68,6 +69,10 @@ class DataCollectionService : Service() {
             // write to the file
             writeToFile(file)
         }
+    }
+
+    override fun onBind(p0: Intent?): IBinder? {
+        return null
     }
 
     private fun createFile() : File {
@@ -93,10 +98,6 @@ class DataCollectionService : Service() {
         FileOutputStream(file, true).use {
             it.write("$stats\n".toByteArray())
         }
-    }
-
-    override fun onBind(intent: Intent): IBinder {
-        null!!
     }
 
     companion object {
