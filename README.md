@@ -59,5 +59,5 @@ adb shell logcat -d | grep "BatteryMgr:DataCollectionService" > batterymanager-c
 
 ## Limitations and Known Issues
 * The companion app keeps everything in memory and then dumps it to a csv file. This means that if the user wants to use memory as a dependent variable, they should not use the `csv` persistency strategy.
-* Extremely low `sample_interval` values causes the number of observations from the companion app to be inconsistent between runs. (i.e., one run might have 1000 rows, next run could have 800, or 1200 rows).
-* Running the BatteryManager app using the `csv` persistency strategy can crash on older devices. We recommend setting it to `False`.
+* Extremely low `sampleRate` values causes the number of observations from the companion app to be inconsistent between runs. (i.e., one run might have 1000 rows, next run could have 800, or 1200 rows).
+* Running the collection step using the `toCSV` set to `True` can crash on older devices. We recommend setting it to `False`.
