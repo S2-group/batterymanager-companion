@@ -2,6 +2,26 @@
 ## Description
 This app provides and interface between the [BatteryManager](https://developer.android.com/reference/android/os/BatteryManager) class in the Android API and the user, allowing for an easy way to view the battery-related information of any Android device. The application was developed to integrate with [AndroidRunner](https://github.com/s2-group/android-runner), but it can be used as a standalone app as well via [ADB](https://developer.android.com/studio/command-line/adb) commands.
 
+
+## Validation
+A series of validation experiments of the application can be found in the [battery-manager-ar-plugin-evaluation](https://github.com/S2-group/battery-manager-ar-plugin-evaluation) repository.
+The experiments were run over the course of a week on the following devices:
+* Samsung Galaxy J7
+* Google Pixel 3
+* Nexus 5X
+* Nokia 6.1
+* Nokia G10
+
+All the devices went through a series of [stress test applications](https://github.com/S2-group/android-apps-benchmark), and the data was collected using [AndroidRunner](https://github.com/S2-group/android-runner). The device battery level was not allowed to drop below 75% during the experiments. All the devices were connected to a Raspberry PI 4B via WiFi. The Raspberry PI was used to run the experiments and collect the data. 
+
+The scope of the validation was to ensure that there are no discrepancies in the energy usage between the different devices when the BatteryManager app is running at different sampling rates. The sampling rates that were used are:
+* 1000 ms (1 second)
+* 100 ms (0.1 seconds)
+* 10 ms (0.01 seconds)
+* 1 ms (0.001 seconds)
+* 0 ms (as fast as possible)
+
+
 ## Installation
 ### via ADB
 1. Download the [latest release](https://github.com/S2-group/batterymanager-companion/releases) of the app.
@@ -9,6 +29,7 @@ This app provides and interface between the [BatteryManager](https://developer.a
 3. Open a terminal and navigate to the folder where you downloaded the app.
 4. Run the following command: `adb install -g com.example.batterymanager_utility.apk`.
 5. The app should now be installed on your device.
+
 
 ## Usage
 ### via ADB
@@ -61,3 +82,4 @@ adb shell logcat -d | grep "BatteryMgr:DataCollectionService" > batterymanager-c
 * The companion app keeps everything in memory and then dumps it to a csv file. This means that if the user wants to use memory as a dependent variable, they should not use the `csv` persistency strategy.
 * Extremely low `sampleRate` values causes the number of observations from the companion app to be inconsistent between runs. (i.e., one run might have 1000 rows, next run could have 800, or 1200 rows).
 * Running the collection step using the `toCSV` set to `True` can crash on older devices. We recommend setting it to `False`.
+
